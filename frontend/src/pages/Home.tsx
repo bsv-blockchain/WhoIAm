@@ -1,11 +1,23 @@
+import { useState } from "react";
 import { Shell } from "@/components/layout/Shell";
 import { VerificationCard } from "@/components/VerificationCard";
-import { Phone, ArrowRight, ArrowDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Phone, ArrowRight, ArrowDown, Copy, Check } from "lucide-react";
 import { XLogo } from "@/components/icons/XLogo";
 import { GoogleLogo } from "@/components/icons/GoogleLogo";
+import { getCertifierConfig } from "@/lib/constants";
 import { motion } from "framer-motion";
 
 export default function Home() {
+  const [copied, setCopied] = useState(false);
+  const { certifierUrl } = getCertifierConfig();
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(certifierUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <Shell>
       <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10 sm:py-16">
@@ -142,6 +154,39 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Trust Network panel */}
+          <div className="rounded-xl border border-border bg-surface p-5 sm:p-6 max-w-2xl mx-auto">
+            <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-1">
+              For wallet users
+            </p>
+            <p className="text-sm font-medium text-text-primary mb-1">
+              Add to your Trust Network
+            </p>
+            <p className="text-sm text-text-secondary mb-4">
+              To trust certificates from Who I Am, add this service as a trusted
+              Provider in your BRC-100 wallet settings by pasting in the URL
+              below.
+            </p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 min-w-0 truncate rounded-lg border border-border bg-white px-3 py-2 text-sm font-mono text-text-primary">
+                {certifierUrl}
+              </code>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopy}
+                className="shrink-0"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-emerald-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+                {copied ? "Copied" : "Copy"}
+              </Button>
+            </div>
           </div>
         </motion.div>
       </div>
