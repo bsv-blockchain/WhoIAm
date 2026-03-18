@@ -50,7 +50,7 @@ export default function GoogleCallback() {
         setName(nameParam || '')
         try {
           const wallet = getWalletClient()
-          const { certifierPublicKey, certifierUrl } = getCertifierConfig()
+          const { certifierPublicKey, certifierUrl } = await getCertifierConfig()
 
           const newCert = await wallet.acquireCertificate({
             certifier: certifierPublicKey,

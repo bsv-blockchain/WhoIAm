@@ -42,7 +42,7 @@ export default function XCallback() {
         setUserName(uName);
         try {
           const wallet = getWalletClient();
-          const { certifierPublicKey, certifierUrl } = getCertifierConfig();
+          const { certifierPublicKey, certifierUrl } = await getCertifierConfig();
 
           const newCert = await wallet.acquireCertificate({
             certifier: certifierPublicKey,

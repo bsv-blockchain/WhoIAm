@@ -6,19 +6,35 @@ export const CERTIFICATE_TYPES = {
 
 export type CertType = keyof typeof CERTIFICATE_TYPES
 
-export function getCertifierConfig() {
-  const hostname = window.location.hostname
+let cachedCertifierConfig: { certifierUrl: string; certifierPublicKey: string } | null = null
 
-  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.ngrok.app') || hostname.endsWith('.ngrok.io')) {
-    return {
-      certifierUrl: window.location.origin,
-      certifierPublicKey: '02e7eeb3986273db6843b790a1595ed0ff1b2ae8f43ae2e7f1a0c9db4dd3fb9441',
-    }
+export async function getCertifierConfig() {
+  if (cachedCertifierConfig) {
+    return cachedCertifierConfig
   }
 
-  return {
-    certifierUrl: import.meta.env.VITE_CERTIFIER_URL || 'https://api.whoiam.bsvb.tech',
-    certifierPublicKey: '03285263f06139b66fb27f51cf8a92e9dd007c4c4b83876ad6c3e7028db450a4c2',
+  const hostname = window.location.hostname
+  const certifierUrl = import.meta.env.VITE_CERTIFIER_URL || (
+    hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.ngrok.app') || hostname.endsWith('.ngrok.io')
+      ? window.location.origin
+      : 'https://api.whoiam.bsvb.tech'
+  )
+
+  try {
+    // Fetch manifest.json to get the actual public key from the backend
+    const response = await fetch(`${certifierUrl}/manifest.json`)
+    const manifest = await response.json()
+    const certifierPublicKey = manifest.babbage?.trust?.publicKey || '03285263f06139b66fb27f51cf8a92e9dd007c4c4b83876ad6c3e7028db450a4c2'
+
+    cachedCertifierConfig = { certifierUrl, certifierPublicKey }
+    return cachedCertifierConfig
+  } catch {
+    // Fallback to default if manifest fetch fails
+    cachedCertifierConfig = {
+      certifierUrl,
+      certifierPublicKey: '03285263f06139b66fb27f51cf8a92e9dd007c4c4b83876ad6c3e7028db450a4c2',
+    }
+    return cachedCertifierConfig
   }
 }
 

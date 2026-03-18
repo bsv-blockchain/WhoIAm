@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Shell } from "@/components/layout/Shell";
 import { VerificationCard } from "@/components/VerificationCard";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,11 @@ import { motion } from "framer-motion";
 
 export default function Home() {
   const [copied, setCopied] = useState(false);
-  const { certifierUrl } = getCertifierConfig();
+  const [certifierUrl, setCertifierUrl] = useState("");
+
+  useEffect(() => {
+    getCertifierConfig().then(config => setCertifierUrl(config.certifierUrl));
+  }, []);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(certifierUrl);

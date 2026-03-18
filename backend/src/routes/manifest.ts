@@ -15,7 +15,7 @@ const publicKey = PrivateKey.fromHex(config.SERVER_PRIVATE_KEY)
  * @see https://bsv.brc.dev/peer-to-peer/0068
  */
 router.get("/manifest.json", (_req: Request, res: Response) => {
-  const iconUrl = `${config.HOSTING_DOMAIN}/public/whoiam.png`;
+  const iconUrl = `${config.HOSTING_DOMAIN}/whoiam.png`;
 
   res.json({
     name: "Who I Am",

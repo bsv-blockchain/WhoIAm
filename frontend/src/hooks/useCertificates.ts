@@ -34,7 +34,7 @@ export function useCertificates() {
     setIsLoading(true)
     try {
       const wallet = getWalletClient()
-      const { certifierPublicKey } = getCertifierConfig()
+      const { certifierPublicKey } = await getCertifierConfig()
 
       const certTypes = Object.values(CERTIFICATE_TYPES)
       const allCerts: CertificateInfo[] = []
