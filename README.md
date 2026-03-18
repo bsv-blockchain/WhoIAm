@@ -16,11 +16,12 @@ A self-sovereign identity verification service built on the BSV blockchain. User
 │  (Vite + Nginx) │                           │  (Node / BRC-31) │
 └─────────────────┘                           └────────┬─────────┘
                                                        │
-                                          ┌────────────┼────────────┐
-                                          ▼            ▼            ▼
-                                        MongoDB      Redis      BSV Wallet
-                                    (cert metadata) (OAuth     (certifier
-                                                    sessions)   key + signing)
+                                               ┌───────┴───────┐
+                                               ▼               ▼
+                                             Redis         BSV Wallet
+                                         (OAuth sessions, (certifier
+                                          verifications,   key + signing)
+                                          rate limits)
 ```
 
 - **Frontend** — React 18, Vite, Tailwind CSS, shadcn/ui, framer-motion
@@ -53,12 +54,6 @@ Edit `.env` and fill in all required values (see [Environment variables](#enviro
 docker compose up
 ```
 
-Or with dev tools (Mongo Express on port 8081):
-
-```bash
-docker compose --profile dev up
-```
-
 Or with monitoring (Prometheus + Grafana):
 
 ```bash
@@ -71,7 +66,6 @@ docker compose --profile monitoring up
 |----------------|-----------------------------|
 | Frontend       | http://localhost:3000       |
 | Backend API    | http://localhost:8080       |
-| Mongo Express  | http://localhost:8081 (dev) |
 | Prometheus     | http://localhost:9090 (monitoring) |
 | Grafana        | http://localhost:3001 (monitoring) |
 
@@ -87,18 +81,13 @@ Copy `.env.example` to `.env`. All variables are required unless marked optional
 | `BSV_NETWORK` | `main` or `test` |
 | `WALLET_STORAGE_URL` | (optional) Remote wallet storage URL |
 
-### MongoDB
+### Redis
 
 | Variable | Description |
 |----------|-------------|
-| `MONGO_INITDB_ROOT_USERNAME` | MongoDB root username (default: `whoiam`) |
-| `MONGO_INITDB_ROOT_PASSWORD` | MongoDB root password — **change in production** |
+| `REDIS_PASSWORD` | Password for the Redis server — **required, change in production** |
 
-The `MONGO_URI` is constructed automatically from these values in `docker-compose.yml`. Override `MONGO_URI` directly only if connecting to an external MongoDB instance.
-
-### Redis
-
-`REDIS_URL` is constructed automatically. Override only for an external Redis instance.
+`REDIS_URL` is constructed automatically from `REDIS_PASSWORD` in `docker-compose.yml`. Override directly only for an external Redis instance.
 
 ### Twilio (SMS verification)
 
@@ -153,7 +142,7 @@ The app is designed to run as Docker containers behind a reverse proxy (nginx, C
 
 - [ ] Set `NODE_ENV=production`
 - [ ] Generate a strong `SERVER_PRIVATE_KEY` — fund the corresponding address with enough BSV to cover certificate issuance fees
-- [ ] Set `MONGO_INITDB_ROOT_PASSWORD` to a strong random value
+- [ ] Set `REDIS_PASSWORD` to a strong random value
 - [ ] Set `HOSTING_DOMAIN` and `FRONTEND_URL` to your public domain
 - [ ] Update `X_REDIRECT_URI` and `GOOGLE_REDIRECT_URI` to your production domain and register them with the respective OAuth apps
 - [ ] Put the backend and frontend behind TLS (OAuth providers require HTTPS)
@@ -172,9 +161,8 @@ Both services can be exposed directly or via a `docker compose` network with onl
 
 ### Scaling notes
 
-- The backend is stateless — multiple replicas work fine as long as they share the same MongoDB and Redis instances
-- Redis holds OAuth session state (10-minute TTL) — required for OAuth PKCE flows to complete correctly across replicas
-- MongoDB stores verified attribute mappings for the certifier; this data is low-write and can use a managed Atlas instance in production
+- The backend is stateless — multiple replicas work fine as long as they share the same Redis instance
+- Redis holds OAuth session state (10-min TTL), verification state (24h TTL), and rate-limit counters — required for OAuth PKCE flows and certificate issuance to work correctly across replicas
 
 ## API overview
 
