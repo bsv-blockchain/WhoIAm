@@ -17,7 +17,7 @@ export function getCertifierConfig() {
   }
 
   return {
-    certifierUrl: window.location.origin,
+    certifierUrl: 'https://api.whoiam.bsvb.tech',
     certifierPublicKey: '03285263f06139b66fb27f51cf8a92e9dd007c4c4b83876ad6c3e7028db450a4c2',
   }
 }
@@ -25,7 +25,7 @@ export function getCertifierConfig() {
 export function getApiBaseUrl(): string {
   const hostname = window.location.hostname
   if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.ngrok.app') || hostname.endsWith('.ngrok.io')) return window.location.origin
-  return window.location.origin
+  return 'https://api.whoiam.bsvb.tech'
 }
 
 export const CERT_TYPE_LABELS: Record<string, string> = {
