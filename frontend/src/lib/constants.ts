@@ -9,13 +9,6 @@ export type CertType = keyof typeof CERTIFICATE_TYPES
 export function getCertifierConfig() {
   const hostname = window.location.hostname
 
-  if (hostname.includes('staging')) {
-    return {
-      certifierUrl: 'https://staging-backend.whoiam.lkup.net',
-      certifierPublicKey: '02e7eeb3986273db6843b790a1595ed0ff1b2ae8f43ae2e7f1a0c9db4dd3fb9441',
-    }
-  }
-
   if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.ngrok.app') || hostname.endsWith('.ngrok.io')) {
     return {
       certifierUrl: window.location.origin,
@@ -24,16 +17,15 @@ export function getCertifierConfig() {
   }
 
   return {
-    certifierUrl: 'https://backend.whoiam.lkup.net',
+    certifierUrl: window.location.origin,
     certifierPublicKey: '03285263f06139b66fb27f51cf8a92e9dd007c4c4b83876ad6c3e7028db450a4c2',
   }
 }
 
 export function getApiBaseUrl(): string {
   const hostname = window.location.hostname
-  if (hostname.includes('staging')) return 'https://staging-backend.whoiam.lkup.net'
   if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.ngrok.app') || hostname.endsWith('.ngrok.io')) return window.location.origin
-  return 'https://backend.whoiam.lkup.net'
+  return window.location.origin
 }
 
 export const CERT_TYPE_LABELS: Record<string, string> = {
