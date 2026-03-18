@@ -9,9 +9,6 @@ const envSchema = z.object({
   BSV_NETWORK: z.enum(['main', 'test']).default('main'),
   WALLET_STORAGE_URL: z.string().url().optional(),
 
-  // MongoDB
-  MONGO_URI: z.string().min(1, 'MONGO_URI is required'),
-
   // Redis
   REDIS_URL: z.string().default('redis://localhost:6379'),
 

@@ -2,6 +2,7 @@ import { CertificateTypeDefinition } from '../types'
 
 export const emailCertificate: CertificateTypeDefinition = {
   name: 'Email Certificate',
+  verificationType: 'email',
   fields: ['email'],
   definition: {
     email: '',

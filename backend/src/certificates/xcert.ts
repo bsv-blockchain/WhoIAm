@@ -2,6 +2,7 @@ import { CertificateTypeDefinition } from '../types'
 
 export const xCertificate: CertificateTypeDefinition = {
   name: 'X Certificate',
+  verificationType: 'x',
   fields: ['userName', 'profilePhoto'],
   definition: {
     userName: '',

@@ -161,6 +161,41 @@ export async function getXRefreshToken(
   return r.get(`x_refresh:${identityKey}`)
 }
 
+// ─── Verified Attributes Storage ───────────────────────────────────────────
+
+/**
+ * Store verified attributes after successful platform verification.
+ * Key: verified:{type}:{identityKey}  TTL: 24h
+ */
+export async function writeVerifiedAttributes(
+  identityKey: string,
+  type: string,
+  attributes: Record<string, string>
+): Promise<void> {
+  const r = getRedis()
+  await r.set(
+    `verified:${type}:${identityKey}`,
+    JSON.stringify(attributes),
+    'EX',
+    86400 // 24 hours
+  )
+}
+
+/**
+ * Check that a verification record exists and matches the given attributes.
+ */
+export async function findVerification(
+  identityKey: string,
+  type: string,
+  attributes: Record<string, string>
+): Promise<boolean> {
+  const r = getRedis()
+  const data = await r.get(`verified:${type}:${identityKey}`)
+  if (!data) return false
+  const stored: Record<string, string> = JSON.parse(data)
+  return Object.entries(attributes).every(([k, v]) => stored[k] === v)
+}
+
 /**
  * Close Redis connection gracefully.
  */

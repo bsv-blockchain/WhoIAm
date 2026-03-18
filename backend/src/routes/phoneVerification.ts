@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { validateBody } from '../middleware/validate'
 import { rateLimiter } from '../middleware/rateLimiter'
 import { sendPhoneVerification, checkPhoneVerification } from '../services/twilio'
-import { writeVerifiedAttributes } from '../db/mongo'
+import { writeVerifiedAttributes } from '../services/redis'
 import { trackVerificationAttempt, resetVerificationAttempts } from '../services/redis'
 import { logger } from '../utils/logger'
 
@@ -77,7 +77,7 @@ router.post(
       const result = await checkPhoneVerification(phoneNumber, code)
 
       if (result.verified) {
-        await writeVerifiedAttributes(identityKey, { phoneNumber })
+        await writeVerifiedAttributes(identityKey, 'phone', { phoneNumber })
         await resetVerificationAttempts(identityKey, 'phone')
 
         logger.info({ identityKey, phoneNumber }, 'Phone verified successfully')

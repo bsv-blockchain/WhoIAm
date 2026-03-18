@@ -1,6 +1,5 @@
 import { config } from "./config";
 import { logger } from "./utils/logger";
-import { connectToMongoDB, closeMongoConnection } from "./db/mongo";
 import { connectToRedis, closeRedisConnection } from "./services/redis";
 import { createApp } from "./server";
 import { getWallet } from "./services/wallet";
@@ -9,7 +8,6 @@ async function main() {
   logger.info({ env: config.NODE_ENV }, "Starting Who I Am backend...");
 
   // Connect to infrastructure
-  await connectToMongoDB();
   connectToRedis();
 
   // Initialize BSV wallet (singleton cached in services/wallet.ts)
@@ -39,7 +37,6 @@ async function main() {
       logger.info("HTTP server closed");
 
       try {
-        await closeMongoConnection();
         await closeRedisConnection();
         logger.info("All connections closed. Exiting.");
         process.exit(0);

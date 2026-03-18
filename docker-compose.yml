@@ -1,34 +1,15 @@
 services:
-  # ─── MongoDB ───────────────────────────────────────────────────────────
-  mongo:
-    image: mongo:7
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-whoiam}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-whoiam_dev}
-      MONGO_INITDB_DATABASE: whoiam
-    volumes:
-      - mongo-data:/data/db
-    ports:
-      - "27017:27017"
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-
   # ─── Redis ─────────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:-dev_password_change_me}
     volumes:
       - redis-data:/data
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-dev_password_change_me}", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -41,8 +22,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      MONGO_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-whoiam}:${MONGO_INITDB_ROOT_PASSWORD:-whoiam_dev}@mongo:27017/whoiam?authSource=admin
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://:${REDIS_PASSWORD:-dev_password_change_me}@redis:6379
       HTTP_PORT: 8080
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       X_REDIRECT_URI: ${X_REDIRECT_URI:-http://localhost:8080/api/verify/x/callback}
@@ -50,8 +30,6 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      mongo:
-        condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
@@ -77,22 +55,6 @@ services:
       interval: 15s
       timeout: 5s
       retries: 3
-
-  # ─── Dev Tools (profile: dev) ──────────────────────────────────────────
-  mongo-express:
-    image: mongo-express:latest
-    profiles: [dev]
-    restart: unless-stopped
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME:-whoiam}
-      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-whoiam_dev}
-      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME:-whoiam}:${MONGO_INITDB_ROOT_PASSWORD:-whoiam_dev}@mongo:27017/
-      ME_CONFIG_BASICAUTH: "false"
-    ports:
-      - "8081:8081"
-    depends_on:
-      mongo:
-        condition: service_healthy
 
   # ─── Monitoring (profile: monitoring) ──────────────────────────────────
   prometheus:
@@ -125,7 +87,6 @@ services:
       - prometheus
 
 volumes:
-  mongo-data:
   redis-data:
   prometheus-data:
   grafana-data:

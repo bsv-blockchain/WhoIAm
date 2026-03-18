@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { rateLimiter } from '../middleware/rateLimiter'
 import { validateBody } from '../middleware/validate'
 import { generateAuthUrl, shareCertification } from '../services/twitter'
+import { getRedis } from '../services/redis'
 import { config } from '../config'
 import { logger } from '../utils/logger'
 
@@ -42,21 +43,17 @@ router.post(
     try {
       const identityKey = req.auth.identityKey
 
-      // Check if there's a verification record for this identity key with X attributes
-      const { verificationsCollection } = await import('../db/mongo')
-      const verification = await verificationsCollection().findOne({
-        identityKey,
-        'verifiedAttributes.userName': { $exists: true },
-        'verifiedAttributes.profilePhoto': { $exists: true },
-      })
+      const r = getRedis()
+      const data = await r.get(`verified:x:${identityKey}`)
+      const stored = data ? JSON.parse(data) as Record<string, string> : null
 
-      if (verification) {
+      if (stored && stored.userName && stored.profilePhoto) {
         res.json({
           status: 'success',
           data: {
             verified: true,
-            userName: verification.verifiedAttributes.userName,
-            profilePhoto: verification.verifiedAttributes.profilePhoto,
+            userName: stored.userName,
+            profilePhoto: stored.profilePhoto,
           },
           requestId: req.requestId,
         })

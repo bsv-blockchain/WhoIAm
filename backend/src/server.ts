@@ -17,7 +17,7 @@ import {
 } from "./routes";
 import { handleCallback } from "./services/twitter";
 import { handleGoogleCallback } from "./services/google";
-import { writeVerifiedAttributes } from "./db/mongo";
+import { writeVerifiedAttributes } from "./services/redis";
 import { logger } from "./utils/logger";
 
 export function createApp(wallet: WalletInterface) {
@@ -114,7 +114,7 @@ export function createApp(wallet: WalletInterface) {
 
       const result = await handleCallback(code, state);
 
-      await writeVerifiedAttributes(result.identityKey, {
+      await writeVerifiedAttributes(result.identityKey, 'x', {
         userName: result.userName,
         profilePhoto: result.profilePhoto,
       });
@@ -150,7 +150,7 @@ export function createApp(wallet: WalletInterface) {
 
       const result = await handleGoogleCallback(code, state);
 
-      await writeVerifiedAttributes(result.identityKey, {
+      await writeVerifiedAttributes(result.identityKey, 'google', {
         email: result.email,
         name: result.name,
         profilePhoto: result.profilePhoto,

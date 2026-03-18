@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { validateBody } from '../middleware/validate'
 import { rateLimiter } from '../middleware/rateLimiter'
 import { sendEmailVerification, checkEmailVerification } from '../services/twilio'
-import { writeVerifiedAttributes } from '../db/mongo'
+import { writeVerifiedAttributes } from '../services/redis'
 import { trackVerificationAttempt, resetVerificationAttempts } from '../services/redis'
 import { logger } from '../utils/logger'
 
@@ -78,7 +78,7 @@ router.post(
 
       if (result.verified) {
         // Store verified attributes
-        await writeVerifiedAttributes(identityKey, { email })
+        await writeVerifiedAttributes(identityKey, 'email', { email })
         await resetVerificationAttempts(identityKey, 'email')
 
         logger.info({ identityKey, email }, 'Email verified successfully')

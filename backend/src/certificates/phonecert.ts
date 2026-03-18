@@ -2,6 +2,7 @@ import { CertificateTypeDefinition } from '../types'
 
 export const phoneCertificate: CertificateTypeDefinition = {
   name: 'Phone Certificate',
+  verificationType: 'phone',
   fields: ['phoneNumber'],
   definition: {
     phoneNumber: '',

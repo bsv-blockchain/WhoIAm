@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { Certificate, MasterCertificate, Utils, createNonce } from "@bsv/sdk";
 import { certificateTypes } from "../certifier";
-import { findVerification, writeSignedCertificate } from "../db/mongo";
+import { findVerification } from "../services/redis";
 import { logger } from "../utils/logger";
 import { getWallet } from "../services/wallet";
 
@@ -106,9 +106,9 @@ router.post("/signCertificate", async (req: Request, res: Response) => {
       }
     }
 
-    // Check that a matching verification exists in MongoDB
-    const verification = await findVerification(identityKey, decryptedFields);
-    if (!verification) {
+    // Check that a matching verification exists in Redis
+    const verified = await findVerification(identityKey, certType.verificationType, decryptedFields);
+    if (!verified) {
       res.status(400).json({
         status: "error",
         message:
@@ -140,12 +140,6 @@ router.post("/signCertificate", async (req: Request, res: Response) => {
       fields,
     );
     await certificate.sign(wallet);
-
-    await writeSignedCertificate(
-      identityKey,
-      serialNumber,
-      certificate as unknown as Record<string, unknown>,
-    );
 
     logger.info(
       { identityKey, type, serialNumber },

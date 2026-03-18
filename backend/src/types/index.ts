@@ -24,27 +24,9 @@ export type AuthRequest = Request
  */
 export interface CertificateTypeDefinition {
   name: string
+  verificationType: string
   fields: string[]
   definition: Record<string, string>
-}
-
-/**
- * Stored verification record
- */
-export interface VerificationRecord {
-  identityKey: string
-  verifiedAttributes: Record<string, string>
-  createdAt: Date
-}
-
-/**
- * Stored certification record
- */
-export interface CertificationRecord {
-  identityKey: string
-  serialNumber: string
-  signedCertificate: Record<string, unknown>
-  createdAt: Date
 }
 
 /**

@@ -2,6 +2,7 @@ import { CertificateTypeDefinition } from '../types'
 
 export const googleCertificate: CertificateTypeDefinition = {
   name: 'Google Certificate',
+  verificationType: 'google',
   fields: ['email', 'name', 'profilePhoto'],
   definition: {
     email: '',
