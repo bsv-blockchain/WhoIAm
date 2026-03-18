@@ -17,7 +17,7 @@ export function getCertifierConfig() {
   }
 
   return {
-    certifierUrl: 'https://api.whoiam.bsvb.tech',
+    certifierUrl: import.meta.env.VITE_CERTIFIER_URL || 'https://api.whoiam.bsvb.tech',
     certifierPublicKey: '03285263f06139b66fb27f51cf8a92e9dd007c4c4b83876ad6c3e7028db450a4c2',
   }
 }
