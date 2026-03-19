@@ -6,6 +6,8 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 COPY . .
+ARG VITE_CERTIFIER_URL=https://whoiam.bsvb.tech
+ENV VITE_CERTIFIER_URL=$VITE_CERTIFIER_URL
 RUN npm run build
 
 # ─── Production stage ────────────────────────────────────────────────────────
