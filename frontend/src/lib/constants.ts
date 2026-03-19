@@ -6,7 +6,11 @@ export const CERTIFICATE_TYPES = {
 
 export type CertType = keyof typeof CERTIFICATE_TYPES
 
-let cachedCertifierConfig: { certifierUrl: string; certifierPublicKey: string } | null = null
+let cachedCertifierConfig: {
+  frontUrl: string
+  apiUrl: string
+  certifierPublicKey: string
+} | null = null
 
 export async function getCertifierConfig() {
   if (cachedCertifierConfig) {
@@ -14,24 +18,24 @@ export async function getCertifierConfig() {
   }
 
   const hostname = window.location.hostname
-  const certifierUrl = import.meta.env.VITE_CERTIFIER_URL || (
-    hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.ngrok.app') || hostname.endsWith('.ngrok.io')
-      ? window.location.origin
-      : 'https://api.whoiam.bsvb.tech'
-  )
+  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.ngrok.app') || hostname.endsWith('.ngrok.io')
+
+  const frontUrl = import.meta.env.VITE_FRONT_URL || (isLocal ? window.location.origin : 'https://whoiam.bsvb.tech')
+  const apiUrl = import.meta.env.VITE_API_URL || (isLocal ? window.location.origin : 'https://api.whoiam.bsvb.tech')
 
   try {
-    // Fetch manifest.json to get the actual public key from the backend
-    const response = await fetch(`${certifierUrl}/manifest.json`)
+    // Fetch manifest.json to get the actual public key from the API
+    const response = await fetch(`${apiUrl}/manifest.json`)
     const manifest = await response.json()
     const certifierPublicKey = manifest.babbage?.trust?.publicKey || '03285263f06139b66fb27f51cf8a92e9dd007c4c4b83876ad6c3e7028db450a4c2'
 
-    cachedCertifierConfig = { certifierUrl, certifierPublicKey }
+    cachedCertifierConfig = { frontUrl, apiUrl, certifierPublicKey }
     return cachedCertifierConfig
   } catch {
-    // Fallback to default if manifest fetch fails
+    // Fallback to defaults if manifest fetch fails
     cachedCertifierConfig = {
-      certifierUrl,
+      frontUrl,
+      apiUrl,
       certifierPublicKey: '03285263f06139b66fb27f51cf8a92e9dd007c4c4b83876ad6c3e7028db450a4c2',
     }
     return cachedCertifierConfig

@@ -68,10 +68,10 @@ export default function PhoneVerification() {
         toast.success('Phone verified!')
 
         const wallet = getWalletClient()
-        const { certifierPublicKey, certifierUrl } = await getCertifierConfig()
+        const { certifierPublicKey, apiUrl } = await getCertifierConfig()
         const newCert = await wallet.acquireCertificate({
           certifier: certifierPublicKey,
-          certifierUrl,
+          certifierUrl: apiUrl,
           type: CERTIFICATE_TYPES.phone,
           acquisitionProtocol: 'issuance',
           fields: { phoneNumber },

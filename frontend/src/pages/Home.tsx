@@ -13,7 +13,7 @@ export default function Home() {
   const [certifierUrl, setCertifierUrl] = useState("");
 
   useEffect(() => {
-    getCertifierConfig().then(config => setCertifierUrl(config.certifierUrl));
+    getCertifierConfig().then(config => setCertifierUrl(config.frontUrl));
   }, []);
 
   const handleCopy = () => {
