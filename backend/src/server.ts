@@ -97,13 +97,10 @@ export function createApp(wallet: WalletInterface) {
 
   // ─── Public routes (no auth required) ──────────────────────────────────
 
-  app.use(healthRouter);
-  app.use(metricsRouter);
-  app.use(manifestRouter);
+  const publicRouter = express.Router();
 
-  // X OAuth callback — browser redirect from X, no BSV auth.
-  // Must be registered before the auth middleware so it's fully handled here.
-  app.get("/api/verify/x/callback", async (req: Request, res: Response) => {
+  // OAuth callbacks — browser redirects from providers, no BSV auth.
+  publicRouter.get("/api/verify/x/callback", async (req: Request, res: Response) => {
     try {
       const { code, state } = req.query as { code: string; state: string };
 
@@ -138,8 +135,7 @@ export function createApp(wallet: WalletInterface) {
     }
   });
 
-  // Google OAuth callback — browser redirect from Google, no BSV auth.
-  app.get("/api/verify/google/callback", async (req: Request, res: Response) => {
+  publicRouter.get("/api/verify/google/callback", async (req: Request, res: Response) => {
     try {
       const { code, state } = req.query as { code: string; state: string };
 
@@ -175,6 +171,11 @@ export function createApp(wallet: WalletInterface) {
       res.redirect(`${config.FRONTEND_URL}/verify/google?error=auth_failed`);
     }
   });
+
+  app.use(publicRouter);
+  app.use(healthRouter);
+  app.use(metricsRouter);
+  app.use(manifestRouter);
 
   // ─── BSV Auth middleware ───────────────────────────────────────────────
 
