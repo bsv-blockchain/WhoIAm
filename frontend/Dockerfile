@@ -7,7 +7,7 @@ RUN npm ci
 
 COPY . .
 ARG VITE_FRONT_URL=https://whoiam.bsvb.tech
-ARG VITE_API_URL=https://api.whoiam.bsvb.tech
+ARG VITE_API_URL=https://api.whoiam.bsvb.tech/api
 ENV VITE_FRONT_URL=$VITE_FRONT_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build

@@ -1,5 +1,3 @@
-import { PrivateKey, PublicKey } from "@bsv/sdk";
-import { config } from "./config";
 import { CertificateTypeDefinition } from "./types";
 import { emailCertificate, EMAIL_CERT_TYPE } from "./certificates/emailcert";
 import { phoneCertificate, PHONE_CERT_TYPE } from "./certificates/phonecert";

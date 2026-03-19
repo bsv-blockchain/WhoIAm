@@ -21,7 +21,7 @@ export async function getCertifierConfig() {
   const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.ngrok.app') || hostname.endsWith('.ngrok.io')
 
   const frontUrl = import.meta.env.VITE_FRONT_URL || (isLocal ? window.location.origin : 'https://whoiam.bsvb.tech')
-  const apiUrl = import.meta.env.VITE_API_URL || (isLocal ? window.location.origin : 'https://api.whoiam.bsvb.tech')
+  const apiUrl = import.meta.env.VITE_API_URL || (isLocal ? `${window.location.origin}/api` : 'https://api.whoiam.bsvb.tech/api')
 
   try {
     // Fetch manifest.json to get the actual public key from the API
