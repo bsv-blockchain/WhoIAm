@@ -11,7 +11,7 @@ const router = Router();
  * Sign a certificate after the user has verified their identity.
  * This is called by the BSV SDK's acquireCertificate flow.
  */
-router.post("/signCertificate", async (req: Request, res: Response) => {
+router.post("/api/signCertificate", async (req: Request, res: Response) => {
   try {
     const { clientNonce, type, fields, masterKeyring } = req.body;
     const identityKey = req.auth?.identityKey;

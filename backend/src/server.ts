@@ -182,6 +182,7 @@ export function createApp(wallet: WalletInterface) {
   app.use(
     createAuthMiddleware({
       wallet,
+      allowUnauthenticated: true,
       logger: {
         log: (msg: string) => logger.debug(msg),
         error: (msg: string) => logger.error(msg),
