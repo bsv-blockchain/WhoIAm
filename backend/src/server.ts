@@ -43,22 +43,6 @@ export function createApp(wallet: WalletInterface) {
       "http://localhost:5173",
     ];
 
-    logger.debug(
-      {
-        method: req.method,
-        path: req.path,
-        origin,
-        protocol: req.protocol,
-        secure: req.secure,
-        xForwardedProto: req.headers["x-forwarded-proto"],
-        xForwardedFor: req.headers["x-forwarded-for"],
-        host: req.headers.host,
-        originAllowed: origin ? allowedOrigins.includes(origin) : null,
-        allowedOrigins,
-      },
-      "[CORS] incoming request",
-    );
-
     if (origin && allowedOrigins.includes(origin)) {
       res.header("Access-Control-Allow-Origin", origin);
     }
@@ -90,10 +74,6 @@ export function createApp(wallet: WalletInterface) {
     res.header("Access-Control-Allow-Private-Network", "true");
 
     if (req.method === "OPTIONS") {
-      logger.debug(
-        { origin, path: req.path, originAllowed: origin ? allowedOrigins.includes(origin) : null },
-        "[CORS] OPTIONS preflight",
-      );
       res.sendStatus(200);
       return;
     }
@@ -204,7 +184,6 @@ export function createApp(wallet: WalletInterface) {
 
   const auth = createAuthMiddleware({
     wallet,
-    allowUnauthenticated: true,
     logger: {
       log: (msg: string) => logger.debug(msg),
       error: (msg: string) => logger.error(msg),
