@@ -24,10 +24,11 @@ export async function getCertifierConfig() {
   const apiUrl = import.meta.env.VITE_API_URL || (isLocal ? `${window.location.origin}/api` : 'https://api.whoiam.bsvb.tech/api')
 
   try {
-    // Fetch manifest.json to get the actual public key from the API
-    const response = await fetch(`${apiUrl}/manifest.json`)
+    // Fetch manifest.json — registered at /manifest.json (no /api prefix)
+    const baseUrl = import.meta.env.VITE_API_URL ? apiUrl : getApiBaseUrl()
+    const response = await fetch(`${baseUrl}/manifest.json`)
     const manifest = await response.json()
-    const certifierPublicKey = manifest.babbage?.trust?.publicKey || '03285263f06139b66fb27f51cf8a92e9dd007c4c4b83876ad6c3e7028db450a4c2'
+    const certifierPublicKey = manifest.babbage?.trust?.publicKey || '02e7eeb3986273db6843b790a1595ed0ff1b2ae8f43ae2e7f1a0c9db4dd3fb9441'
 
     cachedCertifierConfig = { frontUrl, apiUrl, certifierPublicKey }
     return cachedCertifierConfig
@@ -36,7 +37,7 @@ export async function getCertifierConfig() {
     cachedCertifierConfig = {
       frontUrl,
       apiUrl,
-      certifierPublicKey: '03285263f06139b66fb27f51cf8a92e9dd007c4c4b83876ad6c3e7028db450a4c2',
+      certifierPublicKey: '02e7eeb3986273db6843b790a1595ed0ff1b2ae8f43ae2e7f1a0c9db4dd3fb9441',
     }
     return cachedCertifierConfig
   }
