@@ -23,6 +23,9 @@ import { logger } from "./utils/logger";
 export function createApp(wallet: WalletInterface) {
   const app = express();
 
+  // Trust reverse proxy (Traefik/nginx) so req.protocol reflects https
+  app.set("trust proxy", true);
+
   // ─── Global middleware ──────────────────────────────────────────────────
 
   // Body parsing
@@ -39,6 +42,22 @@ export function createApp(wallet: WalletInterface) {
       "http://localhost:3000",
       "http://localhost:5173",
     ];
+
+    logger.debug(
+      {
+        method: req.method,
+        path: req.path,
+        origin,
+        protocol: req.protocol,
+        secure: req.secure,
+        xForwardedProto: req.headers["x-forwarded-proto"],
+        xForwardedFor: req.headers["x-forwarded-for"],
+        host: req.headers.host,
+        originAllowed: origin ? allowedOrigins.includes(origin) : null,
+        allowedOrigins,
+      },
+      "[CORS] incoming request",
+    );
 
     if (origin && allowedOrigins.includes(origin)) {
       res.header("Access-Control-Allow-Origin", origin);
@@ -71,6 +90,10 @@ export function createApp(wallet: WalletInterface) {
     res.header("Access-Control-Allow-Private-Network", "true");
 
     if (req.method === "OPTIONS") {
+      logger.debug(
+        { origin, path: req.path, originAllowed: origin ? allowedOrigins.includes(origin) : null },
+        "[CORS] OPTIONS preflight",
+      );
       res.sendStatus(200);
       return;
     }
@@ -179,20 +202,20 @@ export function createApp(wallet: WalletInterface) {
 
   // ─── BSV Auth middleware ───────────────────────────────────────────────
 
-  app.use(
-    createAuthMiddleware({
-      wallet,
-      allowUnauthenticated: true,
-      logger: {
-        log: (msg: string) => logger.debug(msg),
-        error: (msg: string) => logger.error(msg),
-        warn: (msg: string) => logger.warn(msg),
-        info: (msg: string) => logger.info(msg),
-        debug: (msg: string) => logger.debug(msg),
-      } as any,
-      logLevel: config.NODE_ENV === "development" ? "debug" : "info",
-    }),
-  );
+  const auth = createAuthMiddleware({
+    wallet,
+    allowUnauthenticated: true,
+    logger: {
+      log: (msg: string) => logger.debug(msg),
+      error: (msg: string) => logger.error(msg),
+      warn: (msg: string) => logger.warn(msg),
+      info: (msg: string) => logger.info(msg),
+      debug: (msg: string) => logger.debug(msg),
+    } as any,
+    logLevel: config.NODE_ENV === "development" ? "debug" : "info",
+  });
+  
+  app.use(auth);
 
   // ─── Authenticated routes ─────────────────────────────────────────────
 
