@@ -17,11 +17,8 @@ export async function getCertifierConfig() {
     return cachedCertifierConfig
   }
 
-  const hostname = window.location.hostname
-  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.ngrok.app') || hostname.endsWith('.ngrok.io')
-
-  const frontUrl = import.meta.env.VITE_FRONT_URL || (isLocal ? window.location.origin : 'https://whoiam.bsvb.tech')
-  const apiUrl = import.meta.env.VITE_API_URL || (isLocal ? `${window.location.origin}/api` : 'https://api.whoiam.bsvb.tech/api')
+  const frontUrl = import.meta.env.VITE_FRONT_URL || globalThis.location.origin
+  const apiUrl = import.meta.env.VITE_API_URL || `${globalThis.location.origin}/api`
 
   try {
     // Fetch manifest.json — registered at /manifest.json (no /api prefix)
@@ -44,9 +41,7 @@ export async function getCertifierConfig() {
 }
 
 export function getApiBaseUrl(): string {
-  const hostname = window.location.hostname
-  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.ngrok.app') || hostname.endsWith('.ngrok.io')) return window.location.origin
-  return 'https://api.whoiam.bsvb.tech'
+  return globalThis.location.origin
 }
 
 export const CERT_TYPE_LABELS: Record<string, string> = {

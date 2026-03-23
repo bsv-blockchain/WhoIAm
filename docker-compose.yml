@@ -45,6 +45,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     restart: unless-stopped
+    environment:
+      VITE_FRONT_URL: ${VITE_FRONT_URL:-http://localhost:3000}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/api}
     ports:
       - "3000:3000"
     depends_on:
