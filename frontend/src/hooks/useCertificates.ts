@@ -103,15 +103,27 @@ export function useCertificates() {
     const wallet = getWalletClient()
 
     if (cert.isPublic) {
-      const identityClient = getIdentityClient()
-      await identityClient.revokeCertificateRevelation(cert.serialNumber)
+      try {
+        const identityClient = getIdentityClient()
+        await identityClient.revokeCertificateRevelation(cert.serialNumber)
+      } catch (err: any) {
+        const msg = err?.message || String(err)
+        toast.error(`Failed to revoke public attestation: ${msg}`)
+        throw err
+      }
     }
 
-    await wallet.relinquishCertificate({
-      type: cert.type,
-      serialNumber: cert.serialNumber,
-      certifier: cert.certifier,
-    })
+    try {
+      await wallet.relinquishCertificate({
+        type: cert.type,
+        serialNumber: cert.serialNumber,
+        certifier: cert.certifier,
+      })
+    } catch (err: any) {
+      const msg = err?.message || String(err)
+      toast.error(`Failed to delete certificate: ${msg}`)
+      throw err
+    }
 
     await loadCertificates()
   }, [loadCertificates])
@@ -119,11 +131,17 @@ export function useCertificates() {
   const togglePublic = useCallback(async (cert: CertificateInfo) => {
     const identityClient = getIdentityClient()
 
-    if (cert.isPublic) {
-      await identityClient.revokeCertificateRevelation(cert.serialNumber)
-    } else {
-      const fieldNames = Object.keys(cert.fields)
-      await identityClient.publiclyRevealAttributes(cert.raw, fieldNames)
+    try {
+      if (cert.isPublic) {
+        await identityClient.revokeCertificateRevelation(cert.serialNumber)
+      } else {
+        const fieldNames = Object.keys(cert.fields)
+        await identityClient.publiclyRevealAttributes(cert.raw, fieldNames)
+      }
+    } catch (err: any) {
+      const msg = err?.message || String(err)
+      toast.error(`Failed to ${cert.isPublic ? 'revoke' : 'publish'} certificate: ${msg}`)
+      throw err
     }
 
     await loadCertificates()
