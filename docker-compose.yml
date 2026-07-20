@@ -19,6 +19,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      secrets:
+        - github_token
     restart: unless-stopped
     env_file: .env
     environment:
@@ -93,3 +95,11 @@ volumes:
   redis-data:
   prometheus-data:
   grafana-data:
+
+secrets:
+  # Build-time only: a token with read:packages, used to install the private
+  # @bsv-blockchain-demos/float-balance-route from GitHub Packages during the
+  # backend image build. Export it before building, e.g.
+  #   GITHUB_TOKEN=$(gh auth token) docker compose up --build
+  github_token:
+    environment: GITHUB_TOKEN

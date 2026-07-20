@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import { WalletInterface } from "@bsv/sdk";
 import { createAuthMiddleware } from "@bsv/auth-express-middleware";
+import { createBalanceRoute } from "@bsv-blockchain-demos/float-balance-route";
 import { config } from "./config";
 import { requestIdMiddleware } from "./middleware/requestId";
 import { errorHandler } from "./middleware/errorHandler";
@@ -179,6 +180,24 @@ export function createApp(wallet: WalletInterface) {
   app.use(healthRouter);
   app.use(metricsRouter);
   app.use(manifestRouter);
+
+  // ─── Float treasury balance route (read-only, bearer auth) ─────────────
+  // Mounted here, after body parsing and before the BSV auth middleware,
+  // because Float authenticates with a plain bearer token rather than BRC-31.
+  // Read-only by construction: the package calls wallet.listOutputs only and
+  // never handles a key. Stays disabled until FLOAT_BALANCE_TOKEN is present.
+  if (process.env.FLOAT_BALANCE_TOKEN) {
+    app.use(
+      createBalanceRoute({
+        wallet,
+        appName: "bsv-blockchain/whoiam",
+        chain: "main",
+        token: process.env.FLOAT_BALANCE_TOKEN,
+        toolboxFastBalance: true, // wallet-toolbox app
+      }),
+    );
+    logger.info("Float balance route mounted at GET /treasury/balance");
+  }
 
   // ─── BSV Auth middleware ───────────────────────────────────────────────
 
