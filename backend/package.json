@@ -10,6 +10,7 @@
   },
   "license": "Open BSV License",
   "dependencies": {
+    "@bsv-blockchain-demos/float-balance-route": "^0.1.0",
     "@bsv/auth-express-middleware": "^2.0.4",
     "@bsv/payment-express-middleware": "^2.0.1",
     "@bsv/sdk": "^2.0.7",

@@ -64,3 +64,10 @@ jobs:
           platforms: linux/amd64
           build-args: |
             ${{ matrix.service.build-args || '' }}
+          # Lets the backend build install the private
+          # @bsv-blockchain-demos/float-balance-route from GitHub Packages.
+          # The job's GITHUB_TOKEN already has packages:read (via packages:write
+          # below). Passed as a BuildKit secret, never a layer. Unused by the
+          # frontend build.
+          secrets: |
+            github_token=${{ secrets.GITHUB_TOKEN }}
