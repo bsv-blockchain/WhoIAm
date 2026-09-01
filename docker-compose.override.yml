@@ -23,3 +23,6 @@ services:
       - ./frontend/vite.config.ts:/app/vite.config.ts:ro
     environment:
       NODE_ENV: development
+      # Vite runs inside this container — the backend is reachable by service
+      # name, not on the container's own localhost.
+      VITE_API_TARGET: ${VITE_API_TARGET:-http://backend:8080}

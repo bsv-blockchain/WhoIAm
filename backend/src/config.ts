@@ -33,6 +33,19 @@ const envSchema = z.object({
   HOSTING_DOMAIN: z.string().default('http://localhost:8080'),
   FRONTEND_URL: z.string().default('http://localhost:3000'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+
+  // Mobile wallet relay (@bsv/wallet-relay) — QR pairing for phones
+  RELAY_ENABLED: z.string().default('true').transform((v) => v !== 'false'),
+  // http(s):// URL of THIS backend as reachable by the phone (e.g. an ngrok
+  // tunnel in dev). Embedded in the QR as the pairing origin — the mobile
+  // fetches the relay socket URL from it over HTTPS. Defaults to HOSTING_DOMAIN.
+  RELAY_PUBLIC_URL: z.string().url().optional(),
+  // ws(s):// URL of this backend's relay socket. Defaults to RELAY_PUBLIC_URL
+  // with the http scheme swapped for ws.
+  RELAY_WS_URL: z.string().optional(),
+  // Deep-link scheme embedded in the QR pairing URI — must match the scheme
+  // registered by the mobile wallet app.
+  QR_SCHEMA: z.string().default('bsv-wallet'),
 })
 
 function loadConfig() {

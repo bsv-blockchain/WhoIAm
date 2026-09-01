@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'sonner'
+import { WalletConnectGate } from '@/components/WalletConnectGate'
 import Home from '@/pages/Home'
 import PhoneVerification from '@/pages/PhoneVerification'
 import XVerification from '@/pages/XVerification'
@@ -12,6 +13,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Toaster position="top-center" richColors closeButton />
+      <WalletConnectGate />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/verify/phone" element={<PhoneVerification />} />

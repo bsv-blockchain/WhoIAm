@@ -22,8 +22,7 @@ export async function getCertifierConfig() {
 
   try {
     // Fetch manifest.json — registered at /manifest.json (no /api prefix)
-    const baseUrl = import.meta.env.VITE_API_URL ? apiUrl : getApiBaseUrl()
-    const response = await fetch(`${baseUrl}/manifest.json`)
+    const response = await fetch(`${getApiBaseUrl()}/manifest.json`)
     const manifest = await response.json()
     const certifierPublicKey = manifest.babbage?.trust?.publicKey || '02e7eeb3986273db6843b790a1595ed0ff1b2ae8f43ae2e7f1a0c9db4dd3fb9441'
 
@@ -40,7 +39,19 @@ export async function getCertifierConfig() {
   }
 }
 
+/**
+ * Origin that serves the backend API — used as the base for `/api/...` paths
+ * and, via AuthFetch, for the BRC-104 `/.well-known/auth` handshake.
+ *
+ * Derived from VITE_API_URL (minus its `/api` suffix) so requests go straight
+ * to the backend. Falls back to this page's origin, which relies on the dev
+ * server / nginx proxying `/api` and `/.well-known` through to the backend.
+ */
 export function getApiBaseUrl(): string {
+  const apiUrl = import.meta.env.VITE_API_URL
+  if (apiUrl) {
+    return apiUrl.replace(/\/api\/?$/, '')
+  }
   return globalThis.location.origin
 }
 

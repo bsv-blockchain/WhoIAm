@@ -19,6 +19,7 @@ import {
 import { handleCallback } from "./services/twitter";
 import { handleGoogleCallback } from "./services/google";
 import { writeVerifiedAttributes } from "./services/redis";
+import { walletRelayRouter } from "./services/walletRelay";
 import { logger } from "./utils/logger";
 
 export function createApp(wallet: WalletInterface) {
@@ -177,6 +178,10 @@ export function createApp(wallet: WalletInterface) {
   });
 
   app.use(publicRouter);
+  // Mobile wallet relay REST API — public: the phone pairing over it has no
+  // BSV auth session yet. Populated by initWalletRelay() once the HTTP server
+  // exists; must be mounted here, ahead of the auth middleware.
+  app.use(walletRelayRouter);
   app.use(healthRouter);
   app.use(metricsRouter);
   app.use(manifestRouter);

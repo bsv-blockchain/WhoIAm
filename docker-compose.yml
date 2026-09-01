@@ -29,6 +29,12 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       X_REDIRECT_URI: ${X_REDIRECT_URI:-http://localhost:8080/api/verify/x/callback}
       GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:8080/api/verify/google/callback}
+      # Mobile wallet relay — RELAY_PUBLIC_URL must be reachable from the phone
+      # (use an ngrok tunnel to this backend in local dev).
+      RELAY_ENABLED: ${RELAY_ENABLED:-true}
+      RELAY_PUBLIC_URL: ${RELAY_PUBLIC_URL:-http://localhost:8080}
+      RELAY_WS_URL: ${RELAY_WS_URL:-ws://localhost:8080}
+      QR_SCHEMA: ${QR_SCHEMA:-bsv-wallet}
     ports:
       - "8080:8080"
     depends_on:
@@ -50,6 +56,7 @@ services:
     environment:
       VITE_FRONT_URL: ${VITE_FRONT_URL:-http://localhost:3000}
       VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/api}
+      VITE_BSV_NETWORK: ${VITE_BSV_NETWORK:-mainnet}
     ports:
       - "3000:3000"
     depends_on:

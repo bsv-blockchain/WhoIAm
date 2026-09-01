@@ -1,36 +1,18 @@
-import { useState, useEffect } from 'react'
-import { getWalletClient } from '@/lib/wallet'
-import { useVerificationStore } from '@/stores/verification'
+import { useWalletStore } from '@/stores/wallet'
 
+/**
+ * Read-only view of the wallet connection. The connection itself is driven by
+ * `WalletConnectGate`, which detects a local substrate and — when none is
+ * found — offers QR pairing with a mobile wallet.
+ */
 export function useWallet() {
-  const [identityKey, setIdentityKey] = useState<string | null>(null)
-  const [isChecking, setIsChecking] = useState(true)
-  const { isWalletConnected, setWalletConnected } = useVerificationStore()
+  const { mode, identityKey } = useWalletStore()
 
-  useEffect(() => {
-    let cancelled = false
-
-    async function check() {
-      try {
-        const wallet = getWalletClient()
-        const result = await wallet.getPublicKey({ identityKey: true })
-        if (!cancelled) {
-          setIdentityKey(result.publicKey)
-          setWalletConnected(true)
-        }
-      } catch {
-        if (!cancelled) {
-          setIdentityKey(null)
-          setWalletConnected(false)
-        }
-      } finally {
-        if (!cancelled) setIsChecking(false)
-      }
-    }
-
-    check()
-    return () => { cancelled = true }
-  }, [setWalletConnected])
-
-  return { identityKey, isWalletConnected, isChecking }
+  return {
+    identityKey,
+    isWalletConnected: mode === 'local' || mode === 'mobile',
+    isChecking: mode === 'detecting',
+    isMobileWallet: mode === 'mobile',
+    mode,
+  }
 }
