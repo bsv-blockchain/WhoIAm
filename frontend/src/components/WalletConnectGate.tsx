@@ -15,20 +15,75 @@ const INSTALL_URL = import.meta.env.VITE_WALLET_INSTALL_URL ?? 'https://desktop.
 /**
  * Wallet connection gate, mounted once for the whole app.
  *
- * On load it probes for a local BRC-100 substrate. When none is found it shows
- * a modal offering either a wallet install or QR pairing with a mobile wallet
- * over the relay — the paired phone is then installed as the app-wide wallet
- * (see `lib/wallet.ts`), so every existing call site works unchanged.
+ * On load it first tries to resume a mobile wallet paired earlier in this tab
+ * — the OAuth verification flows leave the page entirely and come back, which
+ * wipes all in-memory state, so without this the paired phone would be lost
+ * every time the user returned from Google or X. The relay client persists the
+ * session to sessionStorage, so resuming re-attaches to the same phone.
+ *
+ * Only when there is nothing to resume does it probe for a local BRC-100
+ * substrate and, failing that, offer QR pairing. Whichever wallet wins is
+ * installed app-wide (see `lib/wallet.ts`), so every call site is unchanged.
  */
 export function WalletConnectGate() {
   const { mode, setLocal, setMobile, setNone } = useWalletStore()
   const setWalletConnected = useVerificationStore((s) => s.setWalletConnected)
   const [showQR, setShowQR] = useState(false)
 
+  // `autoCreate`/`autoResume` are deliberately left off: the hook's own
+  // auto-start effect tears the session down on unmount, which under
+  // StrictMode's double-mount would kill a freshly resumed session.
+  const { session, error, createSession, resumeSession, wallet } = useWalletRelayClient({
+    apiUrl: RELAY_API_URL,
+    autoCreate: false,
+  })
+
+  // 'resuming' suppresses local-substrate detection until we know whether a
+  // paired phone is coming back, so the connect modal never flashes on top of
+  // an already-connected session.
+  const [phase, setPhase] = useState<'resuming' | 'detect'>('resuming')
+
+  const resumedRef = useRef(false)
+  useEffect(() => {
+    if (resumedRef.current) return
+    resumedRef.current = true
+    void resumeSession()
+      .then((resumed) => {
+        if (resumed?.status !== 'connected') setPhase('detect')
+      })
+      .catch(() => setPhase('detect'))
+  }, [resumeSession])
+
+  // Hand the paired phone to the rest of the app as the active wallet. Runs
+  // both for a fresh pairing and for a session resumed after a page load.
+  const installedRef = useRef(false)
+  useEffect(() => {
+    if (installedRef.current) return
+    if (session?.status !== 'connected' || !wallet) return
+    installedRef.current = true
+
+    const relayWallet = new RelayWallet(wallet)
+    setRelayWallet(relayWallet)
+    void relayWallet
+      .getPublicKey({ identityKey: true })
+      .then(({ publicKey }) => {
+        setMobile(publicKey)
+        setWalletConnected(true)
+        setShowQR(false)
+      })
+      .catch(() => {
+        // The session looked alive but the phone did not answer — drop back to
+        // the normal connect flow rather than leaving a dead wallet installed.
+        installedRef.current = false
+        setRelayWallet(null)
+        setPhase('detect')
+      })
+  }, [session?.status, wallet, setMobile, setWalletConnected])
+
   const handleLocalWallet = useCallback(
-    (wallet: WalletClient) => {
+    (localWallet: WalletClient) => {
       setRelayWallet(null)
-      void wallet
+      void localWallet
         .getPublicKey({ identityKey: true })
         .then(({ publicKey }) => setLocal(publicKey))
         .catch(() => setLocal(null))
@@ -42,26 +97,24 @@ export function WalletConnectGate() {
     setWalletConnected(false)
   }, [setNone, setWalletConnected])
 
-  const handleMobileConnected = useCallback(
-    (identityKey: string | null) => {
-      setMobile(identityKey)
-      setWalletConnected(true)
-      setShowQR(false)
-    },
-    [setMobile, setWalletConnected],
-  )
+  const handleOpenQR = useCallback(() => {
+    setShowQR(true)
+    if (session?.status !== 'pending') void createSession()
+  }, [createSession, session?.status])
+
+  const showDetection = phase === 'detect' && mode !== 'mobile'
 
   return (
     <>
-      {/* Detection is done by the relay lib's modal: it renders nothing while
-          probing or when a local wallet is found. We render our own chooser UI
-          through its `children` slot. */}
-      {(mode === 'detecting' || mode === 'none') && (
-        <WalletConnectionModal onLocalWallet={handleLocalWallet} onMobileQR={() => setShowQR(true)}>
+      {/* The relay lib's modal does the substrate probe: it renders nothing
+          while probing or when a local wallet is found. Our chooser UI goes in
+          its `children` slot, so mounting means "no local wallet". */}
+      {showDetection && (
+        <WalletConnectionModal onLocalWallet={handleLocalWallet} onMobileQR={handleOpenQR}>
           <WalletChooser
             open={!showQR}
             onDetectedNoWallet={handleNoWallet}
-            onMobileQR={() => setShowQR(true)}
+            onMobileQR={handleOpenQR}
             onDismiss={handleNoWallet}
           />
         </WalletConnectionModal>
@@ -69,8 +122,9 @@ export function WalletConnectGate() {
 
       {showQR && (
         <MobilePairingDialog
-          apiUrl={RELAY_API_URL}
-          onConnected={handleMobileConnected}
+          session={session}
+          error={error}
+          onRefresh={createSession}
           onClose={() => setShowQR(false)}
         />
       )}
@@ -85,10 +139,6 @@ interface ChooserProps {
   onDismiss: () => void
 }
 
-/**
- * Rendered only once the relay lib has concluded no local wallet is present,
- * so mounting is itself the "no wallet detected" signal.
- */
 function WalletChooser({ open, onDetectedNoWallet, onMobileQR, onDismiss }: ChooserProps) {
   useEffect(() => {
     onDetectedNoWallet()
@@ -124,49 +174,15 @@ function WalletChooser({ open, onDetectedNoWallet, onMobileQR, onDismiss }: Choo
 }
 
 interface PairingProps {
-  apiUrl: string
-  onConnected: (identityKey: string | null) => void
+  session: Parameters<typeof QRDisplay>[0]['session']
+  error: string | null
+  onRefresh: () => void
   onClose: () => void
 }
 
-function MobilePairingDialog({ apiUrl, onConnected, onClose }: PairingProps) {
-  const { session, error, createSession, cancelSession, wallet } = useWalletRelayClient({
-    apiUrl,
-    autoCreate: false,
-  })
-
-  // React StrictMode mounts effects twice in dev. Creating a session per mount
-  // would leave the phone scanning a QR for a session we already replaced, so
-  // create exactly once per mount and let the backend GC reclaim it.
-  const startedRef = useRef(false)
-  useEffect(() => {
-    if (startedRef.current) return
-    startedRef.current = true
-    void createSession()
-  }, [createSession])
-
-  // Hand the paired phone to the rest of the app as the active wallet.
-  const installedRef = useRef(false)
-  useEffect(() => {
-    if (installedRef.current) return
-    if (session?.status !== 'connected' || !wallet) return
-    installedRef.current = true
-
-    const relayWallet = new RelayWallet(wallet)
-    setRelayWallet(relayWallet)
-    void relayWallet
-      .getPublicKey({ identityKey: true })
-      .then(({ publicKey }) => onConnected(publicKey))
-      .catch(() => onConnected(null))
-  }, [session?.status, wallet, onConnected])
-
-  const handleClose = useCallback(() => {
-    if (!installedRef.current) cancelSession()
-    onClose()
-  }, [cancelSession, onClose])
-
+function MobilePairingDialog({ session, error, onRefresh, onClose }: PairingProps) {
   return (
-    <Dialog open onOpenChange={(next) => { if (!next) handleClose() }}>
+    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">Scan with your mobile wallet</DialogTitle>
@@ -184,7 +200,7 @@ function MobilePairingDialog({ apiUrl, onConnected, onClose }: PairingProps) {
         <div className="flex flex-col items-center gap-4 pb-2">
           <QRDisplay
             session={session}
-            onRefresh={createSession}
+            onRefresh={onRefresh}
             className="flex flex-col items-center gap-3"
             loadingProps={{ className: 'h-56 w-56 animate-pulse rounded-xl bg-surface' }}
             qrProps={{
