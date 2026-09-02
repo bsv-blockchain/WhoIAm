@@ -26,7 +26,7 @@ const INSTALL_URL = import.meta.env.VITE_WALLET_INSTALL_URL ?? 'https://desktop.
  * installed app-wide (see `lib/wallet.ts`), so every call site is unchanged.
  */
 export function WalletConnectGate() {
-  const { mode, setLocal, setMobile, setNone } = useWalletStore()
+  const { mode, setLocal, setMobile, setNone, setBootstrapped } = useWalletStore()
   const setWalletConnected = useVerificationStore((s) => s.setWalletConnected)
   const [showQR, setShowQR] = useState(false)
 
@@ -49,10 +49,19 @@ export function WalletConnectGate() {
     resumedRef.current = true
     void resumeSession()
       .then((resumed) => {
-        if (resumed?.status !== 'connected') setPhase('detect')
+        // Nothing to resume: release the app immediately. A resumed session
+        // holds the gate closed until the wallet is actually installed below,
+        // so pages never run against a half-restored connection.
+        if (resumed?.status !== 'connected') {
+          setPhase('detect')
+          setBootstrapped()
+        }
       })
-      .catch(() => setPhase('detect'))
-  }, [resumeSession])
+      .catch(() => {
+        setPhase('detect')
+        setBootstrapped()
+      })
+  }, [resumeSession, setBootstrapped])
 
   // Hand the paired phone to the rest of the app as the active wallet. Runs
   // both for a fresh pairing and for a session resumed after a page load.
@@ -78,7 +87,8 @@ export function WalletConnectGate() {
         setRelayWallet(null)
         setPhase('detect')
       })
-  }, [session?.status, wallet, setMobile, setWalletConnected])
+      .finally(setBootstrapped)
+  }, [session?.status, wallet, setMobile, setWalletConnected, setBootstrapped])
 
   const handleLocalWallet = useCallback(
     (localWallet: WalletClient) => {

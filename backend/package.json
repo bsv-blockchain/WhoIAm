@@ -1,6 +1,6 @@
 {
   "name": "whoiam-backend",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Who I Am identity resolution backend — verifies email, phone, and X accounts, issues BSV certificates.",
   "main": "out/index.js",
   "scripts": {

@@ -12,6 +12,14 @@ export type WalletMode = 'detecting' | 'local' | 'mobile' | 'none'
 interface WalletState {
   mode: WalletMode
   identityKey: string | null
+  /**
+   * True once the gate has finished deciding which wallet (if any) is active.
+   * Pages must not touch `getWalletClient()` before this flips, or a mobile
+   * wallet still being resumed will be missed and a local WalletClient used
+   * in its place — see `WalletConnectGate`.
+   */
+  isBootstrapped: boolean
+  setBootstrapped: () => void
   setDetecting: () => void
   setLocal: (identityKey: string | null) => void
   setMobile: (identityKey: string | null) => void
@@ -21,6 +29,8 @@ interface WalletState {
 export const useWalletStore = create<WalletState>((set) => ({
   mode: 'detecting',
   identityKey: null,
+  isBootstrapped: false,
+  setBootstrapped: () => set({ isBootstrapped: true }),
   setDetecting: () => set({ mode: 'detecting', identityKey: null }),
   setLocal: (identityKey) => set({ mode: 'local', identityKey }),
   setMobile: (identityKey) => set({ mode: 'mobile', identityKey }),
