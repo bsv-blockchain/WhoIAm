@@ -24,8 +24,14 @@ export default function XCallback() {
   const [isRevealing, setIsRevealing] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const certRef = useRef<any>(null);
+  // Issuance must run exactly once. StrictMode mounts effects twice in dev,
+  // and without this the callback asks the wallet for two certificates.
+  const processedRef = useRef(false);
 
   useEffect(() => {
+    if (processedRef.current) return;
+    processedRef.current = true;
+
     async function process() {
       const success = searchParams.get("success");
       const error = searchParams.get("error");
