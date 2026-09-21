@@ -14,7 +14,7 @@
     "@bsv-blockchain-demos/float-balance-route": "^0.1.0",
     "@bsv/auth-express-middleware": "^2.0.4",
     "@bsv/payment-express-middleware": "^2.0.1",
-    "@bsv/sdk": "^2.4.2",
+    "@bsv/sdk": "^2.5.0",
     "@bsv/wallet-relay": "^0.1.1",
     "@bsv/wallet-toolbox": "^2.1.5",
     "dotenv": "^16.4.4",

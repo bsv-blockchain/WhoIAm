@@ -11,7 +11,7 @@
     "test": "npx tsx --test src/lib/overlay.test.ts"
   },
   "dependencies": {
-    "@bsv/sdk": "^2.4.2",
+    "@bsv/sdk": "^2.5.0",
     "@bsv/wallet-relay": "^0.1.1",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-label": "^2.1.1",
