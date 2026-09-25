@@ -117,12 +117,14 @@ describe('identity overlay host pinning', () => {
 })
 
 describe('SDK lookup trap this app must not hit', () => {
-  it('LookupResolver with wallet chain "main" has no SLAP trackers', () => {
-    const resolver = new LookupResolver({
-      networkPreset: 'main' as 'mainnet',
-      reputationStorage: { get: () => null, set: () => {} },
-    }) as unknown as { networkPreset: string; slapTrackers: unknown }
-    assert.equal(resolver.networkPreset, 'main')
-    assert.equal(resolver.slapTrackers, undefined)
+  it('LookupResolver rejects wallet chain "main" as a network preset', () => {
+    assert.throws(
+      () =>
+        new LookupResolver({
+          networkPreset: 'main' as 'mainnet',
+          reputationStorage: { get: () => null, set: () => {} },
+        }),
+      /network preset is invalid/,
+    )
   })
 })

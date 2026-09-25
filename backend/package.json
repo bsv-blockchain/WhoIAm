@@ -1,6 +1,6 @@
 {
   "name": "whoiam-backend",
-  "version": "2.1.5",
+  "version": "2.2.0",
   "description": "Who I Am identity resolution backend — verifies email, phone, and X accounts, issues BSV certificates.",
   "main": "out/index.js",
   "scripts": {
@@ -12,11 +12,11 @@
   "license": "Open BSV License",
   "dependencies": {
     "@bsv-blockchain-demos/float-balance-route": "^0.1.0",
-    "@bsv/auth-express-middleware": "^2.0.4",
-    "@bsv/payment-express-middleware": "^2.0.1",
-    "@bsv/sdk": "^2.5.0",
-    "@bsv/wallet-relay": "^0.1.1",
-    "@bsv/wallet-toolbox": "^2.1.5",
+    "@bsv/auth-express-middleware": "^2.2.8",
+    "@bsv/payment-express-middleware": "^2.1.8",
+    "@bsv/sdk": "^2.8.7",
+    "@bsv/wallet-relay": "^0.5.1",
+    "@bsv/wallet-toolbox": "^2.14.2",
     "dotenv": "^16.4.4",
     "express": "^4.21.2",
     "google-auth-library": "^10.6.1",

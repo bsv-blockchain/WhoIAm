@@ -1,7 +1,7 @@
 {
   "name": "whoiam-ui",
   "description": "Who I Am — identity resolution for the BSV ecosystem",
-  "version": "2.1.5",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,8 +11,8 @@
     "test": "npx tsx --test src/lib/overlay.test.ts"
   },
   "dependencies": {
-    "@bsv/sdk": "^2.5.0",
-    "@bsv/wallet-relay": "^0.1.1",
+    "@bsv/sdk": "^2.8.7",
+    "@bsv/wallet-relay": "^0.5.1",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-separator": "^1.1.1",

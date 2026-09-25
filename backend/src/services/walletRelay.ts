@@ -102,7 +102,7 @@ function registerRoutes(service: WalletRelayService): void {
       });
   });
 
-  walletRelayRouter.get("/api/session/:id", (req: Request, res: Response) => {
+  walletRelayRouter.get("/api/session/:id", (req: Request<{ id: string }>, res: Response) => {
     const info = service.getSession(req.params.id);
     if (!info) {
       res.status(404).json({ error: "Session not found" });
@@ -111,7 +111,7 @@ function registerRoutes(service: WalletRelayService): void {
     res.json(info);
   });
 
-  walletRelayRouter.post("/api/request/:id", (req: Request, res: Response) => {
+  walletRelayRouter.post("/api/request/:id", (req: Request<{ id: string }>, res: Response) => {
     const { method, params } = req.body as { method?: string; params?: unknown };
     if (!method) {
       res.status(400).json({ error: "method is required" });
@@ -131,7 +131,7 @@ function registerRoutes(service: WalletRelayService): void {
       });
   });
 
-  walletRelayRouter.delete("/api/session/:id", (req: Request, res: Response) => {
+  walletRelayRouter.delete("/api/session/:id", (req: Request<{ id: string }>, res: Response) => {
     const token = desktopToken(req);
     if (!token) {
       res.status(401).json({ error: "Missing desktop token" });
