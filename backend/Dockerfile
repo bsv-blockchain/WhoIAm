@@ -1,5 +1,5 @@
 # ─── Builder stage ───────────────────────────────────────────────────────────
-FROM node:22-alpine AS builder
+FROM node:22.23.4-alpine AS builder
 WORKDIR /app
 
 # Toolchain for native modules (better-sqlite3 via @bsv/wallet-toolbox) that
@@ -20,7 +20,7 @@ COPY src ./src
 RUN npm run build && npm prune --omit=dev
 
 # ─── Production stage ────────────────────────────────────────────────────────
-FROM node:22-alpine AS production
+FROM node:22.23.4-alpine AS production
 WORKDIR /app
 
 RUN apk add --no-cache wget
