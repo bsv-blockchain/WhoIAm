@@ -23,7 +23,9 @@ RUN npm run build && npm prune --omit=dev
 FROM node:22.23.4-alpine AS production
 WORKDIR /app
 
-RUN apk add --no-cache wget
+# apk upgrade pulls Alpine security fixes published after the base image.
+RUN apk upgrade --no-cache && \
+    apk add --no-cache wget
 
 # Reuse the builder's pruned node_modules so native addons compiled there
 # (same base image) are carried over without a toolchain in this stage.
