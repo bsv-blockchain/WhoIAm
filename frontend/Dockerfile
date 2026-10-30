@@ -11,7 +11,7 @@ RUN npm ci
 COPY . .
 
 # ─── Production stage ────────────────────────────────────────────────────────
-FROM nginx:alpine AS production
+FROM nginx:1.31.8-alpine3.24 AS production
 ARG NODE_VERSION
 
 # Node comes from the pinned deps image rather than Alpine's nodejs package,
@@ -19,7 +19,10 @@ ARG NODE_VERSION
 # npm/npx are symlinks in the node image; COPY would dereference them.
 COPY --from=deps /usr/local/bin/node /usr/local/bin/node
 COPY --from=deps /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
-RUN apk add --no-cache wget libstdc++ && \
+# apk upgrade pulls Alpine security fixes (e.g. brotli-libs) published after
+# the base image was built.
+RUN apk upgrade --no-cache && \
+    apk add --no-cache wget libstdc++ && \
     ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
     ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
 ENV NODE_VERSION=${NODE_VERSION}
