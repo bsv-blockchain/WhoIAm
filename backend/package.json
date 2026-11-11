@@ -9,7 +9,7 @@
     "dev": "tsx --watch src/index.ts",
     "unpublish-identity": "tsx scripts/unpublish-identity.ts"
   },
-  "license": "Open BSV License",
+  "license": "Apache-2.0",
   "dependencies": {
     "@bsv-blockchain-demos/float-balance-route": "^0.1.0",
     "@bsv/auth-express-middleware": "^2.2.8",
