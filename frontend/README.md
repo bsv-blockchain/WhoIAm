@@ -11,4 +11,4 @@ Your browser should automatically open, and your changes should be reflected on-
 
 ## License
 
-The license for the code in this repository is the Open BSV License.
+The license for the code in this repository is the Apache License 2.0.
