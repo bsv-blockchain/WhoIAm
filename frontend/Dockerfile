@@ -1,5 +1,5 @@
 # Node runs in both stages: deps installs, and entrypoint.sh builds at start.
-ARG NODE_VERSION=22.23.4
+ARG NODE_VERSION=22.23.5
 
 # ─── Build dependencies stage ────────────────────────────────────────────────
 FROM node:${NODE_VERSION}-alpine AS deps
