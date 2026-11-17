@@ -15,7 +15,7 @@
     "@bsv/auth-express-middleware": "^2.2.8",
     "@bsv/payment-express-middleware": "^2.1.8",
     "@bsv/sdk": "^2.8.7",
-    "@bsv/wallet-relay": "^0.5.1",
+    "@bsv/wallet-relay": "^0.8.0",
     "@bsv/wallet-toolbox": "^2.14.2",
     "dotenv": "^16.4.4",
     "express": "^4.21.2",
