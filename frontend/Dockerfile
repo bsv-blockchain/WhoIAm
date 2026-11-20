@@ -11,7 +11,7 @@ RUN npm ci
 COPY . .
 
 # ─── Production stage ────────────────────────────────────────────────────────
-FROM nginx:1.31.8-alpine3.24 AS production
+FROM nginx:1.31.9-alpine3.24 AS production
 ARG NODE_VERSION
 
 # Node comes from the pinned deps image rather than Alpine's nodejs package,
